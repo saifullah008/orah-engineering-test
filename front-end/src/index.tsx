@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Link } from "react-router-dom"
 import "index.css"
 import StaffApp from "staff-app/app"
 import { GlobalStyle } from "shared/styles/global-style"
+import {Provider} from 'react-redux'
+import store from "utils/store"
 
 const Home: React.FC = () => {
   return (
@@ -18,6 +20,7 @@ const Home: React.FC = () => {
 
 ReactDOM.render(
   <React.StrictMode>
+    <Provider store={store}>
     <GlobalStyle />
     <BrowserRouter>
       <Routes>
@@ -25,6 +28,7 @@ ReactDOM.render(
         <Route path="staff/*" element={<StaffApp />} />
       </Routes>
     </BrowserRouter>
+    </Provider>
   </React.StrictMode>,
   document.getElementById("root")
 )

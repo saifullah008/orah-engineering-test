@@ -1,16 +1,30 @@
-import React from "react"
+import React, { Dispatch } from "react"
 import styled from "styled-components"
 import { Spacing, BorderRadius, FontWeight } from "shared/styles/styles"
 import { Images } from "assets/images"
 import { Colors } from "shared/styles/colors"
 import { Person, PersonHelper } from "shared/models/person"
 import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-switcher.component"
+import { updateStudentAttendance } from "utils/studentSlice"
+import { useAppDispatch } from "utils/hooks"
+import { useAppSelector } from "utils/hooks"
+import { PayloadAction } from '@reduxjs/toolkit';
+
 
 interface Props {
   isRollMode?: boolean
   student: Person
 }
+
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
+  const dispatch= useAppDispatch()
+  const studentList=useAppSelector(state=>state.student.students)
+  const StudentState=(detail:any)=>{
+    dispatch(updateStudentAttendance({student,detail}))
+    
+  }
+  
+  console.log(studentList)
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
@@ -19,7 +33,7 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher />
+          <RollStateSwitcher onStateChange={StudentState}  />
         </S.Roll>
       )}
     </S.Container>
