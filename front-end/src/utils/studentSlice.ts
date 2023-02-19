@@ -2,11 +2,13 @@ import { createSlice} from "@reduxjs/toolkit";
 import { Person } from "shared/models/person";
 
 interface StudentState {
-    students:any[]
+    students:any[],
+    type:string
   }
   
   const initialState: StudentState = {
     students: [],
+    type:"unmark"
   }
 const studentSlice = createSlice({
   name: "student",
@@ -24,6 +26,9 @@ const studentSlice = createSlice({
         }
     
     },
+    updatedType:(state,action)=>{
+      state.type=action.payload
+    },
     clearStudentList:(state)=>{
         state.students=[]
     }
@@ -31,6 +36,6 @@ const studentSlice = createSlice({
   
 });
 
-export const { updateStudentAttendance,clearStudentList} = studentSlice.actions;
+export const { updateStudentAttendance,clearStudentList,updatedType} = studentSlice.actions;
 
 export default studentSlice.reducer;

@@ -23,8 +23,13 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
     dispatch(updateStudentAttendance({student,detail}))
     
   }
-  
-  console.log(studentList)
+  const getStudentCurrState=(studentId:number)=>{
+
+    console.log(studentList.find(student=>student.id===studentId)?.detail);
+    
+    return studentList.find(student=>student.id===studentId)?.detail || undefined
+  }
+
   return (
     <S.Container>
       <S.Avatar url={Images.avatar}></S.Avatar>
@@ -33,7 +38,7 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher onStateChange={StudentState}  />
+          <RollStateSwitcher onStateChange={StudentState} initialState={getStudentCurrState(student.id)}  />
         </S.Roll>
       )}
     </S.Container>

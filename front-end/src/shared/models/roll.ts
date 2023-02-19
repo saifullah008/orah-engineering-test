@@ -10,3 +10,4 @@ export interface RollInput {
 }
 
 export type RolllStateType = "unmark" | "present" | "absent" | "late"
+export type ItemType = RolllStateType | "all"

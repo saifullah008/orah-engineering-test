@@ -18,7 +18,7 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
   const lateCount = updatedStateList.filter(obj => obj.detail === 'late').length;
   const absentCount = updatedStateList.filter(obj => obj.detail === 'absent').length;
   const allCount=presentCount+lateCount+absentCount
-  
+
 
   return (
     <S.Overlay isActive={isActive}>
@@ -30,9 +30,10 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
               { type: "all", count: allCount },
               { type: "present", count: presentCount },
               { type: "late", count: lateCount },
-              { type: "absent", count: absentCount},
+              { type: "absent", count: absentCount },
             ]}
-           // onItemClick={onItemClick}
+            // onItemClick={()=>onItemClick("filter","all")}
+            onItemClick={(action, value) => onItemClick(action, value)}
           />
           <div style={{ marginTop: Spacing.u6 }}>
             <Button color="inherit" onClick={() => onItemClick("exit")}>
