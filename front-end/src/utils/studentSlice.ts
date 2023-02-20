@@ -1,41 +1,42 @@
-import { createSlice} from "@reduxjs/toolkit";
-import { Person } from "shared/models/person";
+import { createSlice } from "@reduxjs/toolkit"
+import { Person } from "shared/models/person"
 
 interface StudentState {
-    students:any[],
-    type:string
-  }
-  
-  const initialState: StudentState = {
-    students: [],
-    type:"unmark"
-  }
+  students: any[]
+  type: string
+  studentsRollRecords: any[]
+}
+
+const initialState: StudentState = {
+  students: [],
+  type: "unmark",
+  studentsRollRecords: [],
+}
 const studentSlice = createSlice({
   name: "student",
   initialState,
   reducers: {
     updateStudentAttendance: (state, action) => {
-    const {student,detail}=action.payload
-    const existingIndex = state.students.findIndex(obj => obj.id === student.id)
-        if(existingIndex===-1)
-        {
-        state.students=[...state.students,{...student,detail}]
-        }
-        else{
+      const { student, detail } = action.payload
+      const existingIndex = state.students.findIndex((obj) => obj.id === student.id)
+      if (existingIndex === -1) {
+        state.students = [...state.students, { ...student, detail }]
+      } else {
         state.students[existingIndex].detail = detail
-        }
-    
+      }
     },
-    updatedType:(state,action)=>{
-      state.type=action.payload
+    updatedType: (state, action) => {
+      state.type = action.payload
     },
-    clearStudentList:(state)=>{
-        state.students=[]
-    }
+    clearStudentList: (state) => {
+      state.students = []
+    },
+    addRecord: (state, action) => {
+      state.studentsRollRecords.push(action.payload)
+    },
   },
-  
-});
+})
 
-export const { updateStudentAttendance,clearStudentList,updatedType} = studentSlice.actions;
+export const { updateStudentAttendance, clearStudentList, updatedType, addRecord } = studentSlice.actions
 
-export default studentSlice.reducer;
+export default studentSlice.reducer

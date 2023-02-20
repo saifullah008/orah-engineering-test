@@ -10,7 +10,7 @@ import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 import { useAppDispatch, useAppSelector } from "utils/hooks"
-import { clearStudentList } from "utils/studentSlice"
+import { addRecord, clearStudentList } from "utils/studentSlice"
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
@@ -18,7 +18,7 @@ export const HomeBoardPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredStudent, setFilteredStudent] = useState<Person[]>([])
   const [toggle, setToggle] = useState(false)
-  const [isChecked,setIsChecked]=useState(false)
+  const [sortOption, setSortOption] = useState("")
   const allStudents = data?.students
   const dispatch = useAppDispatch()
   const studentList = useAppSelector((state) => state.student.students)
@@ -49,32 +49,37 @@ export const HomeBoardPage: React.FC = () => {
       clearTimeout(timer)
     }
   }, [searchQuery])
+  useEffect(() => {
+    const sortedArray = filteredStudent.slice().sort((a, b) => {
+      if (sortOption === "first_name") {
+        return a.first_name.localeCompare(b.first_name)
+      } else if (sortOption === "last_name") {
+        return a.last_name.localeCompare(b.last_name)
+      }
+      return a.id - b.id
+    })
+
+    setFilteredStudent(sortedArray)
+  }, [sortOption])
 
   const handleSortByOrder = () => {
     if (toggle) filteredStudent.sort((a, b) => a.id - b.id)
     else filteredStudent.sort((a, b) => b.id - a.id)
     setToggle(!toggle)
   }
-  const handleSortByField = (value: string) => {
-    if (value === "first_name") {
-      const data = [...filteredStudent].sort((a, b) => a.first_name.localeCompare(b.first_name))
-      setFilteredStudent(data)
-    } else if (value === "last_name") {
-      const data = [...filteredStudent].sort((a, b) => a.last_name.localeCompare(b.last_name))
-      setFilteredStudent(data)
-    }
-    console.log(filteredStudent)
+
+  const handleSortByField = (option: string) => {
+    setSortOption(sortOption === option ? "" : option)
   }
   const onToolbarAction = (action: ToolbarAction, value?: string) => {
     if (action === "roll") {
       setIsRollMode(true)
     } else if (action === "sort") {
       if (value === "first_name") {
-        handleSortByField("first_name")
+        handleSortByField(value)
       } else if (value === "last_name") {
-        handleSortByField("last_name")
-      }
-      else if (value == "by_order") {
+        handleSortByField(value)
+      } else if (value == "by_order") {
         handleSortByOrder()
       }
     }
@@ -84,12 +89,14 @@ export const HomeBoardPage: React.FC = () => {
   }
 
   const onActiveRollAction = (action: ActiveRollAction, value?: string) => {
-  
     if (action === "exit") {
       setIsRollMode(false)
       handleExit()
-    }
-    if (action === "filter") {
+    } else if (action === "complete") {
+      setIsRollMode(false)
+      dispatch(addRecord(value))
+      handleExit()
+    } else if (action === "filter") {
       const data = studentList.filter((student) => student.detail === value)
       if (value === "present") {
         setFilteredStudent(data)
@@ -97,23 +104,18 @@ export const HomeBoardPage: React.FC = () => {
         setFilteredStudent(data)
       } else if (value === "late") {
         setFilteredStudent(data)
-      }
-      else if(value==="all")
-      {
+      } else if (value === "all") {
         setFilteredStudent(studentList)
       }
     }
   }
-  // const handleIconClick = () => {
-  //   const data = studentList.filter((student) => student.detail === type)
-  //   setFilteredStudent(data)
-  // }
+
   if (!data?.students) return null
 
   return (
     <>
       <S.PageContainer>
-        <Toolbar onItemClick={onToolbarAction} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <Toolbar onItemClick={onToolbarAction} searchQuery={searchQuery} setSearchQuery={setSearchQuery} sortOption={sortOption} />
 
         {loadState === "loading" && (
           <CenteredContainer>
@@ -144,19 +146,20 @@ type ToolbarAction = "roll" | "sort"
 interface ToolbarProps {
   onItemClick: (action: ToolbarAction, value?: string) => void
   searchQuery: string
+  sortOption: string
   setSearchQuery: (value: string) => void
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
-  const { onItemClick, searchQuery, setSearchQuery,  } = props
+  const { onItemClick, searchQuery, sortOption, setSearchQuery } = props
 
   return (
     <S.ToolbarContainer>
       <div onClick={() => onItemClick("sort", "by_order")}>First Name</div>
       <div>
         <label>firstname</label>
-        <input type="checkbox" onClick={() => onItemClick("sort", "first_name")}  />
+        <input type="checkbox" checked={sortOption === "first_name"} onClick={() => onItemClick("sort", "first_name")} />
         <label>lastname</label>
-        <input type="checkbox" onClick={() => onItemClick("sort", "last_name")} />
+        <input type="checkbox" checked={sortOption === "last_name"} onClick={() => onItemClick("sort", "last_name")} />
       </div>
 
       <div>
