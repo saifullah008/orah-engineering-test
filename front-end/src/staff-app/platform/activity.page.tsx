@@ -1,30 +1,55 @@
-import React from "react"
+import React, { useEffect } from "react"
+import { useApi } from "shared/hooks/use-api"
+import { Activity } from "shared/models/activity"
+import { RolllStateType } from "shared/models/roll"
 import { RollStateIcon } from "staff-app/components/roll-state/roll-state-icon.component"
-import { useAppSelector } from "utils/hooks"
+
 
 export const ActivityPage: React.FC = () => {
-  const studentsRollRecord = useAppSelector((state) => state.student.studentsRollRecords)
-  if (studentsRollRecord.length === 0) {
+  const [getStudentsRecords, data, loadState] = useApi<{activity:Activity[]}>({ url: "get-activities" })
+  const studentsRollRecord = data?.activity
+
+
+  useEffect(() => {
+    void getStudentsRecords()
+  }, [getStudentsRecords])
+
+  if (!studentsRollRecord) {
     return <div>No Records ! please complete attendance first</div>
   }
 
   return (
-    <div>
-      {studentsRollRecord.map((studentRecord, index) => (
-        <>
-          <h3>Record-{index + 1} </h3>
-          <Table key={index} record={studentRecord} />
-        </>
-      ))}
+    <div className="records-page-container">
+      {loadState === "loaded" &&
+        studentsRollRecord &&
+        studentsRollRecord?.map((studentRecord, index) => {
+          
+          const completed_at = new Date(studentRecord?.date)
+          const time=completed_at.toLocaleTimeString()
+          const date=completed_at.toLocaleDateString()
+          
+          return(
+            <>
+            <div className="record-header">
+            <h3>
+              Record-{studentRecord?.entity?.name} 
+            </h3>
+            <h3>
+            Completed At-{time}
+            </h3>
+            <h3> Date-{date}</h3>
+            </div>
+            <Table key={index} record={studentRecord?.entity?.student_roll_states} />
+          </>
+        )
+        })}
     </div>
   )
 }
 
 interface Student {
-  id: number
-  first_name: string
-  last_name: string
-  detail: string
+  student_id: number
+  roll_state: string
 }
 
 interface Props {
@@ -32,26 +57,22 @@ interface Props {
 }
 
 const Table: React.FC<Props> = ({ record }) => {
-  console.log(record)
-
   return (
     <div>
       <table className="customers">
         <thead>
           <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
+            <th>Student Id</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          {record.map((student) => (
-            <tr key={student.id}>
-              <td>{student.first_name}</td>
-              <td>{student.last_name}</td>
-              <td>
-                {student.detail}
-                <RollStateIcon type={student.detail} />
+          {record?.map((student) => (
+            <tr key={student.student_id}>
+              <td>{student.student_id}</td>
+              <td className="student-status">
+                {student.roll_state}
+                <RollStateIcon type={student.roll_state as RolllStateType} />
               </td>
             </tr>
           ))}

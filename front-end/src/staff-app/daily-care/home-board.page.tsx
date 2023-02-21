@@ -10,21 +10,23 @@ import { useApi } from "shared/hooks/use-api"
 import { StudentListTile } from "staff-app/components/student-list-tile/student-list-tile.component"
 import { ActiveRollOverlay, ActiveRollAction } from "staff-app/components/active-roll-overlay/active-roll-overlay.component"
 import { useAppDispatch, useAppSelector } from "utils/hooks"
-import { addRecord, clearStudentList } from "utils/studentSlice"
+import { clearStudentList } from "utils/studentSlice"
 
 export const HomeBoardPage: React.FC = () => {
   const [isRollMode, setIsRollMode] = useState(false)
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
+  const [getStudentsRollRecord] = useApi<{ students: Person[] }>({ url: "save-roll" })
   const [searchQuery, setSearchQuery] = useState("")
-  const [filteredStudent, setFilteredStudent] = useState<Person[]>([])
+  const [filteredStudent, setFilteredStudent] = useState<Person[] | undefined>([])
   const [isToggle, setIsToggle] = useState(false)
   const [sortOption, setSortOption] = useState("")
+  const [rollData, setRollData] = useState<{ student_roll_states: any[]}>()
+
   const allStudents = data?.students
   const dispatch = useAppDispatch()
   const studentList = useAppSelector((state) => state.student.students)
-  const type = useAppSelector((state) => state.student.type)
 
-  function filterData(searchQuery: string, students: Person[]) {
+  function filterData(searchQuery: string, students: Person[] | undefined) {
     const filteredData = students?.filter((student) => PersonHelper.getFullName(student).toLowerCase().includes(searchQuery.toLowerCase()))
     return filteredData
   }
@@ -34,14 +36,18 @@ export const HomeBoardPage: React.FC = () => {
   }, [getStudents])
 
   useEffect(() => {
+    if (rollData) void getStudentsRollRecord(rollData)
+  }, [rollData])
+
+  useEffect(() => {
     if (allStudents) {
       setFilteredStudent(allStudents)
     }
-  }, [allStudents])
+  }, [data?.students])
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const value = filterData(searchQuery, data?.students)
+      const value = filterData(searchQuery, allStudents)
       setFilteredStudent(value)
     }, 200)
 
@@ -50,7 +56,7 @@ export const HomeBoardPage: React.FC = () => {
     }
   }, [searchQuery])
   useEffect(() => {
-    const sortedArray = filteredStudent.slice().sort((a, b) => {
+    const sortedArray = filteredStudent?.slice().sort((a, b) => {
       if (sortOption === "first_name") {
         return a.first_name.localeCompare(b.first_name)
       } else if (sortOption === "last_name") {
@@ -63,8 +69,8 @@ export const HomeBoardPage: React.FC = () => {
   }, [sortOption])
 
   const handleSortByOrder = () => {
-    if (isToggle) filteredStudent.sort((a, b) => a.id - b.id)
-    else filteredStudent.sort((a, b) => b.id - a.id)
+    if (isToggle) filteredStudent?.sort((a, b) => a.id - b.id)
+    else filteredStudent?.sort((a, b) => b.id - a.id)
     setIsToggle(!isToggle)
   }
 
@@ -88,16 +94,16 @@ export const HomeBoardPage: React.FC = () => {
     dispatch(clearStudentList())
   }
 
-  const onActiveRollAction = (action: ActiveRollAction, value?: string | any[]) => {
+  const onActiveRollAction = (action: ActiveRollAction, value?: string | any[] | { student_roll_states: any[] })  => {
     if (action === "exit") {
       setIsRollMode(false)
       handleExit()
     } else if (action === "complete") {
       setIsRollMode(false)
-      dispatch(addRecord(value))
+      setRollData(value)
       handleExit()
     } else if (action === "filter") {
-      const data = studentList.filter((student) => student.detail === value)
+      const data = studentList.filter((student) => student.roll_state === value)
       if (value === "present") {
         setFilteredStudent(data)
       } else if (value === "absent") {
@@ -156,7 +162,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
   return (
     <S.ToolbarContainer>
       <label className="toggle-switch">
-        <input type="checkbox" onClick={() => onItemClick("sort", "by_order")} />
+        <input type="checkbox" onChange={() => onItemClick("sort", "by_order")} />
         <span className="switch" />
         <span className="toggle-text">{isToggle ? "Desc" : "Asc"}</span>
       </label>

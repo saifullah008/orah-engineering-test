@@ -17,12 +17,12 @@ const studentSlice = createSlice({
   initialState,
   reducers: {
     updateStudentAttendance: (state, action) => {
-      const { student, detail } = action.payload
+      const { student, roll_state } = action.payload
       const existingIndex = state.students.findIndex((obj) => obj.id === student.id)
       if (existingIndex === -1) {
-        state.students = [...state.students, { ...student, detail }]
+        state.students = [...state.students, { ...student, roll_state }]
       } else {
-        state.students[existingIndex].detail = detail
+        state.students[existingIndex].roll_state = roll_state
       }
     },
     updatedType: (state, action) => {
@@ -31,12 +31,9 @@ const studentSlice = createSlice({
     clearStudentList: (state) => {
       state.students = []
     },
-    addRecord: (state, action) => {      
-      state.studentsRollRecords.push(action.payload)
-    },
   },
 })
 
-export const { updateStudentAttendance, clearStudentList, updatedType, addRecord } = studentSlice.actions
+export const { updateStudentAttendance, clearStudentList, updatedType } = studentSlice.actions
 
 export default studentSlice.reducer

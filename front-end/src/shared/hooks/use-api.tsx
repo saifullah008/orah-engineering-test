@@ -22,6 +22,7 @@ export function useApi<ReturnType = {}>({ url, initialLoadState = "loading" }: O
           dispatch({ type: "error", error: result.error })
         }
       }
+      
 
       switch (url) {
         case "get-homeboard-students":

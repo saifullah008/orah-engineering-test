@@ -8,8 +8,7 @@ import { RollStateSwitcher } from "staff-app/components/roll-state/roll-state-sw
 import { updateStudentAttendance } from "utils/studentSlice"
 import { useAppDispatch } from "utils/hooks"
 import { useAppSelector } from "utils/hooks"
-import { PayloadAction } from '@reduxjs/toolkit';
-
+import { PayloadAction } from "@reduxjs/toolkit"
 
 interface Props {
   isRollMode?: boolean
@@ -17,17 +16,13 @@ interface Props {
 }
 
 export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
-  const dispatch= useAppDispatch()
-  const studentList=useAppSelector(state=>state.student.students)
-  const StudentState=(detail:any)=>{
-    dispatch(updateStudentAttendance({student,detail}))
-    
+  const dispatch = useAppDispatch()
+  const studentList = useAppSelector((state) => state.student.students)
+  const StudentState = (detail: any) => {
+    dispatch(updateStudentAttendance({ student, roll_state:detail }))
   }
-  const getStudentCurrState=(studentId:number)=>{
-
-    console.log(studentList.find(student=>student.id===studentId)?.detail);
-    
-    return studentList.find(student=>student.id===studentId)?.detail || undefined
+  const getStudentCurrState = (studentId: number) => {
+    return studentList.find((student) => student.id === studentId)?.roll_state || undefined
   }
 
   return (
@@ -38,7 +33,7 @@ export const StudentListTile: React.FC<Props> = ({ isRollMode, student }) => {
       </S.Content>
       {isRollMode && (
         <S.Roll>
-          <RollStateSwitcher onStateChange={StudentState} initialState={getStudentCurrState(student.id)}  />
+          <RollStateSwitcher onStateChange={StudentState} initialState={getStudentCurrState(student.id)} />
         </S.Roll>
       )}
     </S.Container>

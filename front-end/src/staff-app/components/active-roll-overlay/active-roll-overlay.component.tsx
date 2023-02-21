@@ -6,17 +6,20 @@ import { RollStateList } from "staff-app/components/roll-state/roll-state-list.c
 import { useAppSelector } from "utils/hooks"
 
 export type ActiveRollAction = "filter" | "exit" | "complete"
+
 interface Props {
   isActive: boolean
-  onItemClick: (action: ActiveRollAction, value?: string | any[]) => void
+  onItemClick: (action: ActiveRollAction, value?: string | any[] | { student_roll_states: any[] }) => void
 }
+
 
 export const ActiveRollOverlay: React.FC<Props> = (props) => {
   const { isActive, onItemClick } = props
-  const updatedStateList = useAppSelector((state) => state.student.students)
-  const presentCount = updatedStateList.filter((obj) => obj.detail === "present").length
-  const lateCount = updatedStateList.filter((obj) => obj.detail === "late").length
-  const absentCount = updatedStateList.filter((obj) => obj.detail === "absent").length
+  let updatedStateList = useAppSelector((state) => state.student.students)
+  updatedStateList = updatedStateList.map(({ id, roll_state, ...rest }) => ({ student_id: id, roll_state }))
+  const presentCount = updatedStateList.filter((obj) => obj.roll_state === "present").length
+  const lateCount = updatedStateList.filter((obj) => obj.roll_state === "late").length
+  const absentCount = updatedStateList.filter((obj) => obj.roll_state === "absent").length
   const allCount = presentCount + lateCount + absentCount
 
   return (
@@ -31,14 +34,13 @@ export const ActiveRollOverlay: React.FC<Props> = (props) => {
               { type: "late", count: lateCount },
               { type: "absent", count: absentCount },
             ]}
-            // onItemClick={()=>onItemClick("filter","all")}
             onItemClick={(action, value) => onItemClick(action, value)}
           />
           <div style={{ marginTop: Spacing.u6 }}>
             <Button color="inherit" onClick={() => onItemClick("exit")}>
               Exit
             </Button>
-            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={() => onItemClick("complete", updatedStateList)}>
+            <Button color="inherit" style={{ marginLeft: Spacing.u2 }} onClick={() => onItemClick("complete", {student_roll_states:updatedStateList})}>
               Complete
             </Button>
           </div>
