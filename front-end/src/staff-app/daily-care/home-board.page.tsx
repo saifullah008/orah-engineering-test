@@ -17,7 +17,7 @@ export const HomeBoardPage: React.FC = () => {
   const [getStudents, data, loadState] = useApi<{ students: Person[] }>({ url: "get-homeboard-students" })
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredStudent, setFilteredStudent] = useState<Person[]>([])
-  const [toggle, setToggle] = useState(false)
+  const [isToggle, setIsToggle] = useState(false)
   const [sortOption, setSortOption] = useState("")
   const allStudents = data?.students
   const dispatch = useAppDispatch()
@@ -63,9 +63,9 @@ export const HomeBoardPage: React.FC = () => {
   }, [sortOption])
 
   const handleSortByOrder = () => {
-    if (toggle) filteredStudent.sort((a, b) => a.id - b.id)
+    if (isToggle) filteredStudent.sort((a, b) => a.id - b.id)
     else filteredStudent.sort((a, b) => b.id - a.id)
-    setToggle(!toggle)
+    setIsToggle(!isToggle)
   }
 
   const handleSortByField = (option: string) => {
@@ -88,7 +88,7 @@ export const HomeBoardPage: React.FC = () => {
     dispatch(clearStudentList())
   }
 
-  const onActiveRollAction = (action: ActiveRollAction, value?: string) => {
+  const onActiveRollAction = (action: ActiveRollAction, value?: string | any[]) => {
     if (action === "exit") {
       setIsRollMode(false)
       handleExit()
@@ -115,7 +115,7 @@ export const HomeBoardPage: React.FC = () => {
   return (
     <>
       <S.PageContainer>
-        <Toolbar onItemClick={onToolbarAction} searchQuery={searchQuery} setSearchQuery={setSearchQuery} sortOption={sortOption} />
+        <Toolbar onItemClick={onToolbarAction} searchQuery={searchQuery} setSearchQuery={setSearchQuery} sortOption={sortOption} isToggle={isToggle} />
 
         {loadState === "loading" && (
           <CenteredContainer>
@@ -147,14 +147,19 @@ interface ToolbarProps {
   onItemClick: (action: ToolbarAction, value?: string) => void
   searchQuery: string
   sortOption: string
+  isToggle: boolean
   setSearchQuery: (value: string) => void
 }
 const Toolbar: React.FC<ToolbarProps> = (props) => {
-  const { onItemClick, searchQuery, sortOption, setSearchQuery } = props
+  const { onItemClick, searchQuery, sortOption, setSearchQuery, isToggle } = props
 
   return (
     <S.ToolbarContainer>
-      <div onClick={() => onItemClick("sort", "by_order")}>First Name</div>
+      <label className="toggle-switch">
+        <input type="checkbox" onClick={() => onItemClick("sort", "by_order")} />
+        <span className="switch" />
+        <span className="toggle-text">{isToggle ? "Desc" : "Asc"}</span>
+      </label>
       <div>
         <label>firstname</label>
         <input type="checkbox" checked={sortOption === "first_name"} onClick={() => onItemClick("sort", "first_name")} />
@@ -163,7 +168,7 @@ const Toolbar: React.FC<ToolbarProps> = (props) => {
       </div>
 
       <div>
-        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}></input>
+        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="search"></input>
       </div>
       <S.Button onClick={() => onItemClick("roll")}>Start Roll</S.Button>
     </S.ToolbarContainer>

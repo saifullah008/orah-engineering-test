@@ -1,9 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit"
-import { Person } from "shared/models/person"
+import { RolllStateType } from "shared/models/roll"
 
 interface StudentState {
   students: any[]
-  type: string
+  type: RolllStateType
   studentsRollRecords: any[]
 }
 
@@ -31,7 +31,7 @@ const studentSlice = createSlice({
     clearStudentList: (state) => {
       state.students = []
     },
-    addRecord: (state, action) => {
+    addRecord: (state, action) => {      
       state.studentsRollRecords.push(action.payload)
     },
   },
